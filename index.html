@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>健康と美容を科学で言語化クイズ</title>
+<style>
+  body {
+    font-family: "Yu Gothic", sans-serif;
+    background: linear-gradient(135deg, #fff4f7, #eef8ff);
+    margin: 0;
+    padding: 20px;
+    color: #333;
+  }
+  .container {
+    max-width: 760px;
+    margin: auto;
+    background: white;
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  }
+  h1 {
+    text-align: center;
+    color: #e85d8f;
+    font-size: 30px;
+  }
+  .subtitle {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 25px;
+  }
+  .question {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 25px 0 15px;
+  }
+  button {
+    display: block;
+    width: 100%;
+    margin: 10px 0;
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    background: #f4f4f4;
+    font-size: 17px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover {
+    background: #ffe1ec;
+    transform: scale(1.02);
+  }
+  .correct {
+    background: #b9f6ca !important;
+  }
+  .wrong {
+    background: #ffcdd2 !important;
+  }
+  #result {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+  }
+  #explain {
+    margin-top: 14px;
+    background: #fff7cc;
+    border-radius: 14px;
+    padding: 15px;
+    line-height: 1.7;
+  }
+  #nextBtn {
+    background: #e85d8f;
+    color: white;
+    margin-top: 20px;
+    display: none;
+  }
+  .score {
+    text-align: center;
+    font-size: 18px;
+    margin-top: 15px;
+  }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>健康と美容を科学で言語化クイズ</h1>
+  <div class="subtitle">Threads投稿で学ぶ「なんとなく不調」のしくみ</div>
+
+  <div class="score" id="score">スコア：0 / 0</div>
+  <div class="question" id="question"></div>
+  <div id="answers"></div>
+  <div id="result"></div>
+  <div id="explain"></div>
+  <button id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
+</div>
+
+<script>
+const quiz = [
+  {
+    q: "「7時間寝たのにだるい…」原因として投稿で重視していたのは？",
+    a: ["睡眠時間だけ", "睡眠の不規則さ", "枕の高さ", "夢の内容"],
+    correct: 1,
+    explain: "大事なのは『何時間寝たか』だけでなく、毎日いつ寝て、いつ光を浴びるか。体内時計のズレが不調に関係します。"
+  },
+  {
+    q: "体内時計の“本社”として説明していた脳の部位は？",
+    a: ["小脳", "視交叉上核", "海馬", "扁桃体"],
+    correct: 1,
+    explain: "視交叉上核は、朝の光を手がかりに全身のリズムを整える司令塔のような存在です。"
+  },
+  {
+    q: "食後に甘いものが欲しくなる現象で関係するのは？",
+    a: ["血糖値の急上昇と急降下", "骨密度", "肺活量", "視力"],
+    correct: 0,
+    explain: "血糖値が急に上がって、その後下がると、脳がさらに糖を欲しがることがあります。"
+  },
+  {
+    q: "深呼吸が落ち着きに関係する理由は？",
+    a: ["筋肉が増えるから", "自律神経に働きかけるから", "胃が大きくなるから", "体温が必ず下がるから"],
+    correct: 1,
+    explain: "呼吸は自律神経にアプローチできる数少ない手段。心拍や緊張感にも関係します。"
+  },
+  {
+    q: "魚の油、DHA・EPAが壊れやすい理由は？",
+    a: ["水に溶けやすいから", "二重結合が多く酸化しやすいから", "甘いから", "硬い脂だから"],
+    correct: 1,
+    explain: "DHAやEPAは不飽和度が高く、酸化しやすい油です。健康に良い油ほど扱い方が大事です。"
+  },
+  {
+    q: "ω3の“3”は何を表している？",
+    a: ["カロリーが3倍", "メチル末端から3番目に最初の二重結合がある", "3時間で吸収される", "3種類の魚に多い"],
+    correct: 1,
+    explain: "ω3とは、メチル末端から数えて3番目の位置に最初の二重結合がある脂肪酸のことです。"
+  },
+  {
+    q: "休肝日の投稿で重要な物質として出てきたのは？",
+    a: ["アセトアルデヒド", "コラーゲン", "メラトニン", "乳酸菌"],
+    correct: 0,
+    explain: "アルコール代謝ではアセトアルデヒドが関係します。二日酔いや体への負担を考えるうえで重要です。"
+  },
+  {
+    q: "腸内環境とうつ・不調の話で関係しやすい考え方は？",
+    a: ["腸と脳は無関係", "腸脳相関", "骨盤だけの問題", "目の疲れだけ"],
+    correct: 1,
+    explain: "腸と脳は神経・免疫・代謝などを通じて影響し合うと考えられています。"
+  }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+function loadQuestion() {
+  answered = false;
+  document.getElementById("result").textContent = "";
+  document.getElementById("explain").textContent = "";
+  document.getElementById("nextBtn").style.display = "none";
+
+  const q = quiz[current];
+  document.getElementById("question").textContent = `Q${current + 1}. ${q.q}`;
+  document.getElementById("answers").innerHTML = "";
+
+  q.a.forEach((ans, index) => {
+    const btn = document.createElement("button");
+    btn.textContent = ans;
+    btn.onclick = () => checkAnswer(btn, index);
+    document.getElementById("answers").appendChild(btn);
+  });
+
+  updateScore();
+}
+
+function checkAnswer(button, index) {
+  if (answered) return;
+  answered = true;
+
+  const q = quiz[current];
+  const buttons = document.querySelectorAll("button");
+
+  buttons.forEach((btn, i) => {
+    if (i === q.correct) btn.classList.add("correct");
+  });
+
+  if (index === q.correct) {
+    score++;
+    document.getElementById("result").textContent = "正解！さすがです✨";
+  } else {
+    button.classList.add("wrong");
+    document.getElementById("result").textContent = "惜しい！でもここ大事です。";
+  }
+
+  document.getElementById("explain").textContent = q.explain;
+  document.getElementById("nextBtn").style.display = "block";
+  updateScore();
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= quiz.length) {
+    showFinal();
+  } else {
+    loadQuestion();
+  }
+}
+
+function updateScore() {
+  document.getElementById("score").textContent = `スコア：${score} / ${current + (answered ? 1 : 0)}`;
+}
+
+function showFinal() {
+  let message = "";
+  if (score === quiz.length) {
+    message = "満点！健康科学マスターです🎉";
+  } else if (score >= 6) {
+    message = "かなり優秀！仕組みで理解できています✨";
+  } else if (score >= 4) {
+    message = "いい感じ！投稿を読むほど強くなります。";
+  } else {
+    message = "ここから伸びます。まずは体内時計・血糖値・油から！";
+  }
+
+  document.querySelector(".container").innerHTML = `
+    <h1>結果発表</h1>
+    <div class="question" style="text-align:center;">${score} / ${quiz.length} 問正解</div>
+    <div id="result">${message}</div>
+    <button onclick="location.reload()">もう一度挑戦する</button>
+  `;
+}
+
+loadQuestion();
+</script>
+</body>
+</html>
